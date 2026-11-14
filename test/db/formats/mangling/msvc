@@ -1,0 +1,92 @@
+NAME=global functions
+FILE=-
+CMDS="!rabin2 -D msvc \"?Func@@YAXH@Z\""
+EXPECT=<<EOF
+void __cdecl Func(int)
+EOF
+RUN
+
+NAME=Namespaced / Class Methods
+FILE=-
+CMDS="!rabin2 -D msvc \"?DoWork@Worker@@QAEXH@Z\""
+EXPECT=<<EOF
+public: void __thiscall Worker::DoWork(int)
+EOF
+RUN
+
+NAME=Constructors / Destructors
+FILE=-
+CMDS="!rabin2 -D msvc \"??0Foo@@QAE@XZ\""
+EXPECT=<<EOF
+public: void __thiscall Foo::constructor(void)
+EOF
+RUN
+
+NAME=Static Class Methods
+FILE=-
+CMDS="!rabin2 -D msvc \"?create@Factory@@SA?AVProduct@@XZ\""
+EXPECT=<<EOF
+public: static class Product __cdecl Factory::create(void)
+EOF
+RUN
+
+NAME=NAME=Templates Methods
+FILE=-
+CMDS="!rabin2 -D msvc \"?instance@Singleton@@0V1@A\""
+EXPECT=<<EOF
+class Singleton Singleton::instance
+EOF
+RUN
+
+NAME=NAME=RTTI metadata
+FILE=-
+CMDS="!rabin2 -D msvc \"N8CryptoPP19TF_CryptoSystemBaseINS_12PK_DecryptorENS_7TF_BaseINS_23TrapdoorFunctionInverseENS_34PK_EncryptionMessageEncodingMethodEEEEE\""
+EXPECT=<<EOF
+CryptoPP::TF_CryptoSystemBase<CryptoPP::PK_Decryptor,CryptoPP::TF_Base<CryptoPP::TrapdoorFunctionInverse,CryptoPP::PK_EncryptionMessageEncodingMethod>>
+EOF
+RUN
+
+
+NAME=msvc args overflow past 64K
+FILE=-
+CMDS="!rabin2 -D msvc \"?f@@YAXVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@@P6AX00000000000000000000@Z111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111@Z\""
+EXPECT=<<EOF
+?f@@YAXVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@@P6AX00000000000000000000@Z111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111@Z
+EOF
+RUN
+
+NAME=msvc function overflow past 64K
+FILE=-
+CMDS="!rabin2 -D msvc \"?f@@YAXVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@@P6AX00000000000000000000@Z1111111111111111111111111111111111111111@Z\""
+EXPECT=<<EOF
+?f@@YAXVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@@P6AX00000000000000000000@Z1111111111111111111111111111111111111111@Z
+EOF
+RUN
+
+NAME=msvc RTTI base class descriptor
+FILE=-
+CMDS=<<EOF
+!rabin2 -D msvc "??_R10000A@@8"
+!rabin2 -D msvc '??$?_R10000@@YAXXZ'
+EOF
+EXPECT=<<EOF
+A::`RTTI Base Class Descriptor at (1,1,1,1)'
+void __cdecl `RTTI Base Class Descriptor at (1,1,1,1)'(void)
+EOF
+RUN
+
+NAME=msvc invalid symbols
+FILE=-
+CMDS=<<EOF
+!rabin2 -D msvc "?f@@YAXH"
+!rabin2 -D msvc "?f@@W4ZAEXXZ"
+!rabin2 -D msvc "?f@@6B?"
+!rabin2 -D msvc '?f@?$g@$1?h@@3_@@YAXXZ'
+EOF
+EXPECT=<<EOF
+?f@@YAXH
+?f@@W4ZAEXXZ
+?f@@6B?
+?f@?$g@$1?h@@3_@@YAXXZ
+EOF
+RUN
